@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>旬と献立</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --bg:#FBFAF6;--surface:#FFFFFF;--surface-2:#F4F1E8;--ink:#232019;--muted:#6E685C;--line:#E6E1D4;
+    --accent:#2E4B6B;--accent-soft:#e3ebf3;
+    --spring:#cf5f86;--summer:#3f7cac;--autumn:#c0602b;--winter:#dfe5ec;--all:#8a8474;
+    --prot:#b0562f;--prot-soft:#f4e4da;--veg:#5f8a3a;--veg-soft:#e6efdb;
+    --shadow:0 1px 2px rgba(35,32,25,.04),0 6px 18px rgba(35,32,25,.06);
+    --disp:"Shippori Mincho",ui-serif,Georgia,"Yu Mincho",serif;
+    --body:"Zen Kaku Gothic New",ui-sans-serif,system-ui,"Hiragino Sans","Yu Gothic",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#191712;--surface:#221f19;--surface-2:#2b2720;--ink:#ece6d8;--muted:#a49d8c;--line:#37322a;
+    --accent:#8fb4d6;--accent-soft:#243343;
+    --spring:#e58aa8;--summer:#6ea6d1;--autumn:#df8a52;--winter:#eef2f6;--all:#b0a892;
+    --prot:#d98a5f;--prot-soft:#3a2a20;--veg:#8fb85e;--veg-soft:#28311d;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.35);}}
+  :root[data-theme="dark"]{
+    --bg:#191712;--surface:#221f19;--surface-2:#2b2720;--ink:#ece6d8;--muted:#a49d8c;--line:#37322a;
+    --accent:#8fb4d6;--accent-soft:#243343;
+    --spring:#e58aa8;--summer:#6ea6d1;--autumn:#df8a52;--winter:#eef2f6;--all:#b0a892;
+    --prot:#d98a5f;--prot-soft:#3a2a20;--veg:#8fb85e;--veg-soft:#28311d;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.35);}
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;
+    padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+  h1,h2,h3,h4{margin:0;font-family:var(--disp);font-weight:700;text-wrap:balance;line-height:1.3}
+  button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+  input,select{font-family:inherit;font-size:14px;color:var(--ink)}
+  .wrap{max-width:980px;margin:0 auto;padding-inline:16px}
+
+  header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
+    background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .head-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-block:14px 10px;flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:10px}
+  .brand h1{font-size:24px;letter-spacing:.06em}
+  .brand .kick{font-size:11px;letter-spacing:.22em;color:var(--muted);font-family:var(--body);font-weight:500;text-transform:uppercase}
+  .status-seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
+  .status-seg button{padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--muted);white-space:nowrap;transition:all .15s}
+  .status-seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+  .status-seg button[data-s="can"][aria-pressed="true"]{color:var(--accent)}
+  .status-seg button[data-s="learn"][aria-pressed="true"]{color:var(--autumn)}
+  .tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{padding:11px 4px;margin-inline:10px 10px;font-size:14px;font-weight:700;color:var(--muted);
+    border-bottom:2.5px solid transparent;white-space:nowrap;font-family:var(--disp)}
+  .tabs button:first-child{margin-left:0}
+  .tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--accent)}
+  .tabs .tnum{font-family:var(--body);font-size:11px;color:var(--muted);margin-right:5px;font-weight:500}
+
+  main{padding-block:20px 90px;min-height:60vh}
+  .view-intro{color:var(--muted);font-size:13px;margin:0 0 16px}
+  .banner{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+    margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+  .banner b{color:var(--ink)}
+  .banner .ba{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+  .banner button{border:1.5px solid var(--line);background:var(--surface);border-radius:9px;padding:7px 13px;font-size:12.5px;font-weight:700;color:var(--ink)}
+  .banner button.pri{background:var(--accent);color:#fff;border-color:transparent}
+
+  .season-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .seasons{display:flex;gap:8px;flex-wrap:wrap}
+  .seasons button{padding:9px 18px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);
+    font-weight:700;font-family:var(--disp);font-size:15px;transition:all .15s;display:flex;align-items:center;gap:7px}
+  .seasons button .kana{font-family:var(--body);font-size:11px;color:var(--muted);font-weight:500}
+  .seasons button[aria-pressed="true"]{color:#fff;border-color:transparent}
+  .seasons button[aria-pressed="true"] .kana{color:rgba(255,255,255,.8)}
+  .seasons button[data-k="spring"][aria-pressed="true"]{background:var(--spring)}
+  .seasons button[data-k="summer"][aria-pressed="true"]{background:var(--summer)}
+  .seasons button[data-k="autumn"][aria-pressed="true"]{background:var(--autumn)}
+  .seasons button[data-k="winter"][aria-pressed="true"]{background:var(--winter);color:#2b2b2b}
+  .seasons button[data-k="winter"][aria-pressed="true"] .kana{color:rgba(0,0,0,.5)}
+  .manage-btn{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 14px;font-size:12.5px;font-weight:700;color:var(--ink)}
+  .manage-btn:hover{border-color:var(--accent)}
+  .ing-group{margin-bottom:14px}
+  .ing-group h3{font-size:12px;letter-spacing:.14em;color:var(--muted);font-family:var(--body);font-weight:700;margin-bottom:8px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{padding:6px 13px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-size:13px;font-weight:500;transition:all .13s}
+  .chip:hover{border-color:var(--muted)}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .chip .n{color:var(--muted);font-size:11px;margin-left:5px}
+  .chip[aria-pressed="true"] .n{color:var(--bg);opacity:.7}
+  .cuisines{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .cuisines button{padding:8px 16px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-weight:700;font-size:13.5px;transition:all .15s}
+  .cuisines button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:transparent}
+  .cuisines button .n{font-size:11px;opacity:.6;margin-left:5px;font-weight:500}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(224px,1fr));gap:12px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 15px;
+    box-shadow:var(--shadow);display:flex;flex-direction:column;gap:9px;text-align:left;transition:border-color .13s}
+  .card.editable{cursor:pointer}
+  .card.editable:hover{border-color:var(--accent)}
+  .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .card h3.dish{font-size:16.5px;font-family:var(--disp);font-weight:700;line-height:1.35}
+  .badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;letter-spacing:.04em}
+  .badge.can{background:var(--accent);color:#fff}
+  .badge.learn{background:transparent;color:var(--autumn);border:1.5px solid var(--autumn)}
+  .card-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .tag{font-size:11px;font-weight:700;color:var(--muted)}
+  .tag.cuisine{color:var(--accent)}
+  .cat-i{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none;margin-right:3px;box-shadow:0 0 0 1px rgba(130,130,130,.35)}
+  .cat-i.fish{background:var(--summer)}.cat-i.meat{background:var(--autumn)}
+  .cat-i.onedish{background:var(--winter)}.cat-i.sub{background:var(--spring)}
+  .provs{display:flex;gap:5px}
+  .prov{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.02em}
+  .prov.P{background:var(--prot-soft);color:var(--prot)}
+  .prov.V{background:var(--veg-soft);color:var(--veg)}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none;box-shadow:0 0 0 1px rgba(130,130,130,.35)}
+  .dot.spring{background:var(--spring)}.dot.summer{background:var(--summer)}
+  .dot.autumn{background:var(--autumn)}.dot.winter{background:var(--winter)}.dot.all{background:var(--all)}
+  .card-ing{font-size:11.5px;color:var(--muted);line-height:1.5}
+  .card-ing b{color:var(--ink);font-weight:500}
+  .empty{color:var(--muted);font-size:13px;padding:30px 0;text-align:center}
+  .count{font-size:12px;color:var(--muted);margin:2px 0 14px;font-family:var(--body)}
+
+  .b-sec{margin-bottom:20px}
+  .b-sec h3{font-size:14px;font-family:var(--disp);display:flex;align-items:center;gap:8px;margin-bottom:3px}
+  .b-sec .role-i{width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(130,130,130,.35)}
+  .b-sec .ssub{font-size:11px;color:var(--muted);margin-bottom:10px}
+  .b-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+  .opt{text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:11px;padding:10px 12px;
+    transition:all .13s;display:flex;flex-direction:column;gap:6px}
+  .opt:hover{border-color:var(--muted)}
+  .opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+  .opt .oname{font-size:13.5px;font-weight:700;display:flex;justify-content:space-between;gap:6px;align-items:center}
+  .opt .check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);flex:none;display:grid;place-items:center;font-size:11px;color:transparent}
+  .opt[aria-pressed="true"] .check{background:var(--accent);border-color:var(--accent);color:#fff}
+  .opt .ometa{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+  .opt .oc{font-size:10.5px;color:var(--muted);font-weight:700}
+  .opt .lrn{font-size:10px;color:var(--autumn);font-weight:700;border:1px solid var(--autumn);border-radius:5px;padding:0 4px}
+
+  .tray-spacer{height:60px}
+  .tray{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--ink);color:var(--bg);
+    box-shadow:0 -4px 18px rgba(0,0,0,.16);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .tray-inner{max-width:980px;margin:0 auto;padding:0 16px}
+  .tray-bar{width:100%;display:flex;align-items:center;gap:10px;padding:14px 0;color:var(--bg)}
+  .tb-h{font-size:11px;letter-spacing:.16em;opacity:.6;font-weight:700;font-family:var(--disp)}
+  .tb-cov{display:flex;gap:5px}
+  .mini{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:999px;border:1.5px solid rgba(255,255,255,.28);opacity:.5}
+  .mini.on{opacity:1;border-color:transparent}
+  .mini.on.P{background:var(--prot);color:#fff}
+  .mini.on.V{background:var(--veg);color:#fff}
+  .tb-count{font-size:12px;font-weight:700;opacity:.85}
+  .tb-caret{font-size:10px;opacity:.6;transition:transform .2s}
+  .tray.open .tb-caret{transform:rotate(180deg)}
+  .tray-detail{padding-bottom:14px}
+  .picks{display:flex;gap:6px;flex-wrap:wrap;min-height:4px}
+  .pick{background:rgba(255,255,255,.13);border-radius:8px;padding:5px 10px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:7px;font-family:var(--disp)}
+  .pick button{color:var(--bg);opacity:.6;font-size:15px;line-height:1;display:grid;place-items:center}
+  .pick button:hover{opacity:1}
+  .tray-note{margin-top:11px;padding-top:11px;border-top:1px solid rgba(255,255,255,.15);font-size:12.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .tray-note .ok{color:#9ec46f;font-weight:700}
+  .tray-note .warn{color:#df8a52;font-weight:700}
+  .tray-actions{margin-top:12px;display:flex;gap:8px;padding-bottom:2px}
+  .tray-actions button{background:rgba(255,255,255,.12);color:var(--bg);border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:700}
+  .tray-actions button:hover{background:rgba(255,255,255,.2)}
+
+  #addFab{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:25;
+    background:var(--accent);color:#fff;border-radius:999px;padding:13px 20px;font-weight:700;font-size:14px;
+    box-shadow:0 4px 14px rgba(46,75,107,.35);display:flex;align-items:center;gap:6px}
+  #addFab:hover{filter:brightness(1.06)}
+
+  .modal{position:fixed;inset:0;z-index:50;background:rgba(20,18,14,.5);backdrop-filter:blur(3px);display:grid;place-items:end center}
+  .sheet{background:var(--surface);width:100%;max-width:540px;max-height:92vh;overflow-y:auto;
+    border-radius:18px 18px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+  @media(min-width:560px){.modal{place-items:center}.sheet{border-radius:18px;max-height:88vh}}
+  .sheet-h{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+  .sheet-h h2{font-size:19px}
+  .sheet-h .back{font-size:20px;color:var(--muted);padding:2px 6px}
+  .f-row{margin-bottom:15px}
+  .f-row label.lab{display:block;font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;margin-bottom:7px}
+  .f-row input[type=text],.f-row select{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg)}
+  .f-row input:focus,.f-row select:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+  .opts{display:flex;gap:8px;flex-wrap:wrap}
+  .opts label{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;margin:0}
+  .opts input{position:absolute;opacity:0;width:0;height:0}
+  .opts label:has(input:checked){background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+  .opts.p label:has(input:checked){background:var(--prot-soft);border-color:var(--prot);color:var(--prot)}
+  .f-hint{font-size:11px;color:var(--muted);margin-top:6px}
+  .sheet-actions{display:flex;gap:10px;margin-top:22px;align-items:center}
+  .sheet-actions .save{background:var(--accent);color:#fff;border-radius:11px;padding:12px 22px;font-weight:700;font-size:14px;flex:1}
+  .sheet-actions .cancel{color:var(--muted);font-weight:700;font-size:13px;padding:12px 8px}
+  .sheet-actions .del{color:#c0392b;font-weight:700;font-size:13px;padding:12px 10px;border:1.5px solid #c0392b33;border-radius:11px}
+  :root[data-theme="dark"] .sheet-actions .del{color:#e57368}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sheet-actions .del{color:#e57368}}
+
+  .picker{border:1.5px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}
+  .picker-search{width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;margin-bottom:8px;background:var(--surface)}
+  .picker-box{max-height:190px;overflow-y:auto}
+  .pgroup h4{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.12em;margin:8px 0 6px;font-family:var(--body)}
+  .pchips{display:flex;gap:6px;flex-wrap:wrap}
+  .pchip{padding:5px 11px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-size:12.5px;font-weight:500}
+  .pchip.sel{background:var(--accent);color:#fff;border-color:transparent}
+  .pchip .ps{font-size:9px;opacity:.55;margin-left:4px}
+  .derived{font-size:12px;color:var(--muted);margin-top:9px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .newing{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}
+  .newing-toggle{font-size:12.5px;font-weight:700;color:var(--accent)}
+  .newing-fields{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;align-items:center}
+  .newing-fields input,.newing-fields select{padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);font-size:12.5px}
+  .newing-fields input{flex:1;min-width:90px}
+  .newing-add{background:var(--accent);color:#fff;border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:700}
+
+  .mgr-group{margin-bottom:15px}
+  .mgr-group h4{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.1em;margin-bottom:8px;font-family:var(--body);display:flex;align-items:center;gap:6px}
+  .mgr-group h4 .sd{width:9px;height:9px;border-radius:50%}
+  .mgr-chips{display:flex;gap:6px;flex-wrap:wrap}
+  .mgr-chip{padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-size:12.5px;font-weight:500}
+  .mgr-chip:hover{border-color:var(--accent)}
+  .mgr-chip .mc{font-size:9px;opacity:.55;margin-left:5px}
+
+  .note{margin-top:34px;padding:14px 16px;border-radius:12px;background:var(--surface-2);border:1px dashed var(--line);font-size:12px;color:var(--muted);line-height:1.7}
+  .note b{color:var(--ink);font-weight:700}
+  @media (max-width:640px){.brand h1{font-size:21px}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="head-top">
+      <div class="brand"><h1>旬と献立</h1><span class="kick">Kondate Board</span></div>
+      <div class="status-seg" role="group" aria-label="作れる／学びたい">
+        <button data-s="all" aria-pressed="true">すべて</button>
+        <button data-s="can" aria-pressed="false">作れる</button>
+        <button data-s="learn" aria-pressed="false">学びたい</button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-v="season" aria-selected="true"><span class="tnum">01</span>旬の食材から</button>
+      <button role="tab" data-v="builder" aria-selected="false"><span class="tnum">02</span>献立づくり</button>
+      <button role="tab" data-v="cuisine" aria-selected="false"><span class="tnum">03</span>ジャンル別</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="view"></div>
+  <div class="note">
+    データは<b>料理</b>と<b>食材</b>の2つ。料理は分類（魚メイン／肉メイン／一皿完結／野菜サブ）・栄養（たんぱく質・野菜）・ジャンル・作れる／学びたいを持ち、使う食材を<b>食材マスタから選んで</b>ひも付けます。
+    <b>旬は食材側で管理</b>し、料理の旬は使う食材から自動で決まります。旬タブの「食材を管理」から食材と旬を追加・編集できます。主食（米・パン・麺）自体は管理対象外です。
+    <span id="storeNote"></span>
+  </div>
+</main>
+
+<button id="addFab" hidden>＋ 料理を追加</button>
+<div id="modal" class="modal" hidden></div>
+
+<!-- Firebase SDK（scriptタグ方式） -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script>
+/* ===== あなたのFirebase設定（公開前提の情報。ここを差し替えれば別プロジェクトにも使えます） ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyBi1wdR4btaYreO5N85jtYfoLKwTrVMtVc",
+  authDomain: "kondate-4db17.firebaseapp.com",
+  projectId: "kondate-4db17",
+  storageBucket: "kondate-4db17.firebasestorage.app",
+  messagingSenderId: "104007583268",
+  appId: "1:104007583268:web:b51d89ddd60435eae0bab1"
+};
+/* ============================================================================ */
+
+const CUISINE={japanese:"和食",italian:"イタリアン",chinese:"中華",french:"フレンチ",indian:"インド",ethnic:"エスニック"};
+const SEASON={spring:"春",summer:"夏",autumn:"秋",winter:"冬",all:"通年"};
+const SEASON_ORDER=["spring","summer","autumn","winter","all"];
+const KANA={spring:"はる",summer:"なつ",autumn:"あき",winter:"ふゆ"};
+const CAT={
+  fish:{l:"魚メイン",sub:"たんぱく質・主役",v:"var(--summer)"},
+  meat:{l:"肉メイン",sub:"たんぱく質・主役",v:"var(--autumn)"},
+  onedish:{l:"一皿完結",sub:"主食込み・単体で成立",v:"var(--winter)"},
+  sub:{l:"野菜のサブ",sub:"食物繊維・ビタミン",v:"var(--spring)"},
+};
+const PROV={P:"たんぱく",V:"野菜"};
+const ICAT={fish:"魚介",meat:"肉",veg:"野菜",other:"その他"};
+
+const FALLBACK_ING=[
+ {n:"鯛",s:"spring",c:"fish"},{n:"あさり",s:"spring",c:"fish"},
+ {n:"鰺",s:"summer",c:"fish"},{n:"鱸",s:"summer",c:"fish"},{n:"鰯",s:"summer",c:"fish"},
+ {n:"秋鮭",s:"autumn",c:"fish"},{n:"秋刀魚",s:"autumn",c:"fish"},{n:"鯖",s:"autumn",c:"fish"},
+ {n:"鰤",s:"winter",c:"fish"},{n:"牡蠣",s:"winter",c:"fish"},{n:"鱈",s:"winter",c:"fish"},
+ {n:"鶏肉",s:"all",c:"meat"},{n:"豚肉",s:"all",c:"meat"},{n:"牛肉",s:"all",c:"meat"},{n:"卵",s:"all",c:"meat"},
+ {n:"春キャベツ",s:"spring",c:"veg"},{n:"アスパラ",s:"spring",c:"veg"},{n:"菜の花",s:"spring",c:"veg"},
+ {n:"トマト",s:"summer",c:"veg"},{n:"なす",s:"summer",c:"veg"},{n:"ズッキーニ",s:"summer",c:"veg"},
+ {n:"ピーマン",s:"summer",c:"veg"},{n:"とうもろこし",s:"summer",c:"veg"},{n:"枝豆",s:"summer",c:"veg"},
+ {n:"しめじ",s:"autumn",c:"veg"},{n:"舞茸",s:"autumn",c:"veg"},{n:"さつまいも",s:"autumn",c:"veg"},
+ {n:"かぼちゃ",s:"autumn",c:"veg"},{n:"れんこん",s:"autumn",c:"veg"},
+ {n:"白菜",s:"winter",c:"veg"},{n:"大根",s:"winter",c:"veg"},{n:"ほうれん草",s:"winter",c:"veg"},
+ {n:"ねぎ",s:"winter",c:"veg"},{n:"ブロッコリー",s:"winter",c:"veg"},
+ {n:"玉ねぎ",s:"all",c:"veg"},{n:"にんじん",s:"all",c:"veg"},{n:"じゃがいも",s:"all",c:"veg"},
+];
+const FALLBACK=[
+ {n:"鰤の照り焼き",cu:"japanese",cat:"fish",prov:["P"],st:"can",ing:["鰤"]},
+ {n:"鯖の味噌煮",cu:"japanese",cat:"fish",prov:["P"],st:"can",ing:["鯖","ねぎ"]},
+ {n:"秋刀魚の塩焼き",cu:"japanese",cat:"fish",prov:["P"],st:"can",ing:["秋刀魚","大根"]},
+ {n:"鮭のムニエル",cu:"french",cat:"fish",prov:["P"],st:"can",ing:["秋鮭"]},
+ {n:"鰺の南蛮漬け",cu:"japanese",cat:"fish",prov:["P"],st:"can",ing:["鰺","玉ねぎ","にんじん"]},
+ {n:"アクアパッツァ",cu:"italian",cat:"fish",prov:["P"],st:"learn",ing:["鯛","あさり","トマト"]},
+ {n:"牡蠣のオイル漬け",cu:"italian",cat:"fish",prov:["P"],st:"learn",ing:["牡蠣"]},
+ {n:"鱸のカルパッチョ",cu:"italian",cat:"fish",prov:["P"],st:"learn",ing:["鱸","トマト"]},
+ {n:"鱈のブランダード",cu:"french",cat:"fish",prov:["P"],st:"learn",ing:["鱈","じゃがいも"]},
+ {n:"鰯のパン粉焼き",cu:"italian",cat:"fish",prov:["P"],st:"can",ing:["鰯"]},
+ {n:"鶏の唐揚げ",cu:"japanese",cat:"meat",prov:["P"],st:"can",ing:["鶏肉"]},
+ {n:"豚の生姜焼き",cu:"japanese",cat:"meat",prov:["P"],st:"can",ing:["豚肉","玉ねぎ"]},
+ {n:"鶏肉と舞茸のソテー",cu:"french",cat:"meat",prov:["P","V"],st:"can",ing:["鶏肉","舞茸"]},
+ {n:"ローストチキン",cu:"french",cat:"meat",prov:["P"],st:"learn",ing:["鶏肉"]},
+ {n:"麻婆豆腐",cu:"chinese",cat:"meat",prov:["P"],st:"can",ing:["豚肉","ねぎ"]},
+ {n:"回鍋肉",cu:"chinese",cat:"meat",prov:["P","V"],st:"can",ing:["豚肉","春キャベツ"]},
+ {n:"青椒肉絲",cu:"chinese",cat:"meat",prov:["P","V"],st:"can",ing:["牛肉","ピーマン"]},
+ {n:"ビーフストロガノフ",cu:"french",cat:"meat",prov:["P"],st:"learn",ing:["牛肉","しめじ","玉ねぎ"]},
+ {n:"タンドリーチキン",cu:"indian",cat:"meat",prov:["P"],st:"learn",ing:["鶏肉"]},
+ {n:"豚と白菜のミルフィーユ鍋",cu:"japanese",cat:"meat",prov:["P","V"],st:"can",ing:["豚肉","白菜"]},
+ {n:"ボロネーゼ",cu:"italian",cat:"onedish",prov:["P"],st:"can",ing:["牛肉","トマト","玉ねぎ"]},
+ {n:"あさりのボンゴレ",cu:"italian",cat:"onedish",prov:["P"],st:"can",ing:["あさり"]},
+ {n:"トマトと鰯の冷製パスタ",cu:"italian",cat:"onedish",prov:["P","V"],st:"learn",ing:["鰯","トマト"]},
+ {n:"きのこの和風パスタ",cu:"italian",cat:"onedish",prov:["V"],st:"can",ing:["しめじ","舞茸"]},
+ {n:"きのこのリゾット",cu:"italian",cat:"onedish",prov:["V"],st:"learn",ing:["しめじ","玉ねぎ"]},
+ {n:"バターチキンカレー",cu:"indian",cat:"onedish",prov:["P"],st:"learn",ing:["鶏肉","トマト"]},
+ {n:"キーマカレー",cu:"indian",cat:"onedish",prov:["P"],st:"can",ing:["豚肉","玉ねぎ","トマト"]},
+ {n:"ガパオライス",cu:"ethnic",cat:"onedish",prov:["P","V"],st:"can",ing:["鶏肉","ピーマン"]},
+ {n:"親子丼",cu:"japanese",cat:"onedish",prov:["P"],st:"can",ing:["鶏肉","卵","玉ねぎ"]},
+ {n:"卵チャーハン",cu:"chinese",cat:"onedish",prov:["P"],st:"can",ing:["卵","ねぎ"]},
+ {n:"カプレーゼ",cu:"italian",cat:"sub",prov:["V"],st:"can",ing:["トマト"]},
+ {n:"ミネストローネ",cu:"italian",cat:"sub",prov:["V"],st:"can",ing:["トマト","にんじん","玉ねぎ","じゃがいも"]},
+ {n:"かぼちゃのポタージュ",cu:"french",cat:"sub",prov:["V"],st:"can",ing:["かぼちゃ","玉ねぎ"]},
+ {n:"ほうれん草のソテー",cu:"french",cat:"sub",prov:["V"],st:"can",ing:["ほうれん草"]},
+ {n:"春キャベツとアンチョビのサラダ",cu:"italian",cat:"sub",prov:["V"],st:"can",ing:["春キャベツ"]},
+ {n:"なすの揚げ浸し",cu:"japanese",cat:"sub",prov:["V"],st:"can",ing:["なす"]},
+ {n:"れんこんのきんぴら",cu:"japanese",cat:"sub",prov:["V"],st:"can",ing:["れんこん","にんじん"]},
+ {n:"白菜の中華スープ",cu:"chinese",cat:"sub",prov:["V"],st:"can",ing:["白菜","ねぎ"]},
+ {n:"ラタトゥイユ",cu:"french",cat:"sub",prov:["V"],st:"can",ing:["なす","ズッキーニ","トマト","ピーマン"]},
+ {n:"きのことほうれん草のサラダ",cu:"italian",cat:"sub",prov:["V"],st:"learn",ing:["しめじ","ほうれん草"]},
+ {n:"アスパラのグリル",cu:"italian",cat:"sub",prov:["V"],st:"can",ing:["アスパラ"]},
+ {n:"ブロッコリーのアンチョビ炒め",cu:"italian",cat:"sub",prov:["V"],st:"can",ing:["ブロッコリー"]},
+ {n:"さつまいものサラダ",cu:"japanese",cat:"sub",prov:["V"],st:"can",ing:["さつまいも"]},
+ {n:"菜の花のからし和え",cu:"japanese",cat:"sub",prov:["V"],st:"can",ing:["菜の花"]},
+ {n:"大根サラダ",cu:"japanese",cat:"sub",prov:["V"],st:"can",ing:["大根"]},
+ {n:"枝豆の塩ゆで",cu:"japanese",cat:"sub",prov:["V"],st:"can",ing:["枝豆"]},
+ {n:"ダル(豆のスープ)",cu:"indian",cat:"sub",prov:["P","V"],st:"learn",ing:["玉ねぎ","トマト"]},
+];
+
+let INGS=FALLBACK_ING.map((x,i)=>({id:"fi-"+i,...x}));
+let INGMAP={}; rebuildIngMap();
+let DISHES=[];
+let fdb=null, seededIngredients=false;
+const state={view:"season",status:"all",season:defaultSeason(),ing:null,cuisine:"all",basket:[],
+  trayOpen:false,canWrite:false,showingSamples:false,ingSamples:false,editId:null,
+  dishRows:[],formIng:[],pickerQ:"",newIngOpen:false};
+
+function defaultSeason(){const m=new Date().getMonth()+1;return m<=2||m===12?"winter":m<=5?"spring":m<=8?"summer":"autumn";}
+function statusOk(d){return state.status==="all"||d.st===state.status;}
+function byId(id){return DISHES.find(d=>d.id===id);}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function provPills(d){return `<span class="provs">${d.prov.map(p=>`<span class="prov ${p}">${PROV[p]}</span>`).join("")}</span>`;}
+function rebuildIngMap(){INGMAP={};INGS.forEach(i=>{INGMAP[i.n]=i;});}
+function seasonOf(name){return INGMAP[name]?INGMAP[name].s:undefined;}
+function deriveSeasons(ing){const ss=[...new Set((ing||[]).map(seasonOf).filter(s=>s&&s!=="all"))];return ss.length?ss:["all"];}
+function dishesUsing(name){return DISHES.filter(d=>d.ing.includes(name)).length;}
+function normalizeDish(d,id){const o={...d,id};o.prov=Array.isArray(o.prov)?o.prov:[];o.ing=Array.isArray(o.ing)?o.ing:[];o.seasons=deriveSeasons(o.ing);return o;}
+function rebuildDishes(){
+  if(fdb&&state.dishRows.length){DISHES=state.dishRows.map(r=>normalizeDish(r,r.id));state.showingSamples=false;}
+  else{DISHES=FALLBACK.map((d,i)=>normalizeDish(d,"sample-"+i));state.showingSamples=!!fdb;}
+}
+
+/* ---------- Firebase ---------- */
+function initDb(){
+  const sn=document.getElementById("storeNote");
+  try{
+    if(typeof firebase==="undefined"||!firebase.initializeApp) throw new Error("SDK not loaded");
+    firebase.initializeApp(firebaseConfig);
+    fdb=firebase.firestore();
+    state.canWrite=true;
+    sn.textContent=" データはFirebaseに保存され、同じURLを開けばどの端末でも同期します。";
+    fdb.collection("ingredients").onSnapshot(snap=>{
+      const rows=snap.docs.map(doc=>({id:doc.id,...doc.data()}));
+      if(rows.length){INGS=rows;state.ingSamples=false;}
+      else{INGS=FALLBACK_ING.map((x,i)=>({id:"fi-"+i,...x}));state.ingSamples=true;
+           if(!seededIngredients){seededIngredients=true;seedIngredients();}}
+      rebuildIngMap(); rebuildDishes(); render();
+    },err=>{console.warn("ingredients:",err);});
+    fdb.collection("dishes").onSnapshot(snap=>{
+      state.dishRows=snap.docs.map(doc=>({id:doc.id,...doc.data()}));
+      rebuildDishes(); render();
+    },err=>{console.warn("dishes:",err);});
+  }catch(e){
+    console.warn(e); state.canWrite=false;
+    sn.textContent=" （Firebaseに接続できないため閲覧のみです。設定またはネットワークを確認してください。）";
+    rebuildDishes(); render();
+  }
+}
+function seedIngredients(){
+  try{const batch=fdb.batch();
+    FALLBACK_ING.forEach((x,i)=>batch.set(fdb.collection("ingredients").doc("ing-"+i),{n:x.n,s:x.s,c:x.c}));
+    batch.commit().catch(e=>console.warn("seed:",e));
+  }catch(e){console.warn(e);}
+}
+async function addDish(p){ if(!fdb)return; try{await fdb.collection("dishes").add(p);}catch(e){alert("保存できませんでした: "+(e.message||e));} }
+async function saveDish(id,p){ if(!fdb)return; try{await fdb.collection("dishes").doc(id).set(p);}catch(e){alert("保存できませんでした: "+(e.message||e));} }
+async function delDish(id){ if(!fdb)return; try{await fdb.collection("dishes").doc(id).delete();}catch(e){alert("削除できませんでした: "+(e.message||e));} }
+async function importSamples(btn){ if(!fdb)return; if(btn){btn.disabled=true;btn.textContent="取り込み中…";}
+  for(const d of FALLBACK){ await addDish({n:d.n,cu:d.cu,cat:d.cat,prov:d.prov,st:d.st,ing:d.ing}); } }
+async function addIngredient(o){ if(!fdb)return null; try{return await fdb.collection("ingredients").add(o);}catch(e){alert("食材を保存できませんでした: "+(e.message||e));return null;} }
+async function saveIngredient(id,o){ if(!fdb)return; try{await fdb.collection("ingredients").doc(id).set(o);}catch(e){alert("保存できませんでした: "+(e.message||e));} }
+async function delIngredient(id){ if(!fdb)return; try{await fdb.collection("ingredients").doc(id).delete();}catch(e){alert("削除できませんでした: "+(e.message||e));} }
+
+/* ---------- cards ---------- */
+function card(d){
+  const seas=d.seasons.map(s=>`<span class="dot ${s}" title="${SEASON[s]}"></span>`).join("");
+  const ings=d.ing.map(n=>`<b>${esc(n)}</b>`).join("・");
+  const edit=state.canWrite&&!state.showingSamples;
+  return `<${edit?`button class="card editable" data-edit="${d.id}"`:`article class="card"`}>
+    <div class="card-head"><h3 class="dish">${esc(d.n)}</h3>
+      <span class="badge ${d.st}">${d.st==="can"?"作れる":"学びたい"}</span></div>
+    <div class="card-meta"><span class="tag cuisine">${CUISINE[d.cu]||""}</span>
+      <span class="tag"><span class="cat-i ${d.cat}"></span>${CAT[d.cat]?CAT[d.cat].l:""}</span>
+      <span style="flex:1"></span>${seas}</div>
+    <div class="card-meta">${provPills(d)}</div>
+    <div class="card-ing">${ings}</div>
+  </${edit?"button":"article"}>`;
+}
+function sampleBanner(){
+  if(!state.showingSamples)return "";
+  return `<div class="banner"><span><b>サンプル表示中。</b>料理を1品追加するとサンプルは消え、あなたのリストに切り替わります。</span>
+    <span class="ba"><button id="importBtn">サンプルを全部取り込む</button><button class="pri" id="bannerAdd">＋ 料理を追加</button></span></div>`;
+}
+function roView(){ return state.canWrite?"":`<div class="banner"><span>保存先に接続できないため、閲覧のみです。絞り込みは使えます。</span></div>`; }
+
+/* ---------- views ---------- */
+function render(){
+  const el=document.getElementById("view");
+  if(state.view==="season")el.innerHTML=viewSeason();
+  else if(state.view==="builder")el.innerHTML=viewBuilder();
+  else el.innerHTML=viewCuisine();
+  const fab=document.getElementById("addFab");
+  fab.hidden=!(state.canWrite&&!state.showingSamples&&state.view!=="builder");
+  bindView();
+}
+function viewSeason(){
+  const s=state.season;
+  const inSeason=INGS.filter(i=>i.s===s), staples=INGS.filter(i=>i.s==="all");
+  const catOrder=["fish","veg","meat","other"];
+  const groups=catOrder.map(c=>({t:ICAT[c],items:inSeason.filter(i=>i.c===c)}))
+    .concat([{t:"通年の常備",items:staples}]).filter(g=>g.items.length);
+  const seasonBtns=SEASON_ORDER.filter(k=>k!=="all").map(k=>
+    `<button data-k="${k}" aria-pressed="${k===s}">${SEASON[k]}<span class="kana">${KANA[k]}</span></button>`).join("");
+  const chips=groups.map(g=>{
+    const cs=g.items.map(i=>{
+      const cnt=DISHES.filter(d=>d.ing.includes(i.n)&&statusOk(d)).length;
+      return `<button class="chip" data-ing="${esc(i.n)}" aria-pressed="${state.ing===i.n}">${esc(i.n)}<span class="n">${cnt}</span></button>`;
+    }).join("");
+    return `<div class="ing-group"><h3>${g.t}</h3><div class="chips">${cs}</div></div>`;
+  }).join("");
+  let dishes = state.ing ? DISHES.filter(d=>d.ing.includes(state.ing)&&statusOk(d))
+                         : DISHES.filter(d=>d.seasons.includes(s)&&statusOk(d));
+  const head=state.ing?`「${esc(state.ing)}」を使う料理`:`${SEASON[s]}が旬の料理`;
+  const manageBtn=(state.canWrite&&!state.ingSamples)?`<button class="manage-btn" id="mgrBtn">⚙ 食材を管理</button>`:"";
+  return `${sampleBanner()}${roView()}<p class="view-intro">季節を選ぶと旬の食材が出ます。食材をタップすると、その食材を使う料理だけに絞れます。旬は「食材を管理」で編集できます。</p>
+    <div class="season-head"><div class="seasons">${seasonBtns}</div>${manageBtn}</div>${chips}
+    <p class="count">${head}　<b>${dishes.length}品</b>${state.ing?` <button id="clearIng" style="color:var(--accent);font-weight:700;font-size:12px;text-decoration:underline">絞り込みを解除</button>`:""}</p>
+    ${dishes.length?`<div class="grid">${dishes.map(card).join("")}</div>`:`<p class="empty">条件に合う料理がありません。</p>`}`;
+}
+function viewCuisine(){
+  const cbtns=`<button data-cu="all" aria-pressed="${state.cuisine==="all"}">すべて<span class="n">${DISHES.filter(statusOk).length}</span></button>`+
+    Object.keys(CUISINE).map(k=>{const cnt=DISHES.filter(d=>d.cu===k&&statusOk(d)).length;
+    return `<button data-cu="${k}" aria-pressed="${state.cuisine===k}">${CUISINE[k]}<span class="n">${cnt}</span></button>`;}).join("");
+  let dishes=DISHES.filter(d=>(state.cuisine==="all"||d.cu===state.cuisine)&&statusOk(d));
+  const order={fish:0,meat:1,onedish:2,sub:3}; dishes.sort((a,b)=>(order[a.cat]??9)-(order[b.cat]??9));
+  return `${sampleBanner()}${roView()}<p class="view-intro">ジャンルで選ぶ。上の「作れる／学びたい」と組み合わせると、たとえば「学びたい中華」だけを一覧できます。</p>
+    <div class="cuisines">${cbtns}</div><p class="count"><b>${dishes.length}品</b></p>
+    ${dishes.length?`<div class="grid">${dishes.map(card).join("")}</div>`:`<p class="empty">条件に合う料理がありません。</p>`}`;
+}
+function viewBuilder(){
+  const secs=["fish","meat","onedish","sub"].map(cat=>{
+    const items=DISHES.filter(d=>d.cat===cat&&statusOk(d)).map(d=>{
+      const sel=state.basket.includes(d.id);
+      const learn=d.st==="learn"?`<span class="lrn">学</span>`:"";
+      return `<button class="opt" data-dish="${d.id}" aria-pressed="${sel}">
+        <span class="oname">${esc(d.n)}<span class="check">✓</span></span>
+        <span class="ometa"><span class="oc">${CUISINE[d.cu]||""}</span>${learn}${provPills(d)}</span></button>`;
+    }).join("");
+    if(!items)return "";
+    return `<div class="b-sec"><h3><span class="role-i" style="background:${CAT[cat].v}"></span>${CAT[cat].l}</h3>
+      <div class="ssub">${CAT[cat].sub}</div><div class="b-grid">${items}</div></div>`;
+  }).join("");
+  return `${roView()}<p class="view-intro">料理を選ぶと、下の献立トレイで<b>たんぱく質</b>と<b>野菜</b>が揃ったかを判定します。一皿完結（パスタ・カレー等）は主食込みなので、あとは野菜を足すだけで一食になります。</p>
+    ${secs}${tray()}`;
+}
+function tray(){
+  const picks=state.basket.map(byId).filter(Boolean);
+  const hasP=picks.some(d=>d.prov.includes("P")), hasV=picks.some(d=>d.prov.includes("V"));
+  const proteinMains=picks.filter(d=>d.cat!=="sub"&&d.prov.includes("P")).length;
+  const hasOne=picks.some(d=>d.cat==="onedish");
+  const mini=(k,on)=>`<span class="mini ${k} ${on?"on":""}">${PROV[k]}</span>`;
+  let note;
+  if(!picks.length) note=`<span>料理を選ぶと、たんぱく質と野菜のバランスを判定します。</span>`;
+  else if(hasP&&hasV){note=`<span class="ok">◎ 整いました</span>`+(hasOne?`<span>主食込みの一皿があるので、これで一食に。</span>`
+      :`<span>たんぱく質＋野菜が揃っています${proteinMains>=2?"（メインが2品でボリューム多め）":""}。</span>`);}
+  else if(hasP&&!hasV) note=`<span class="warn">△ 野菜が不足</span><span>野菜サブを1品足すと整います。</span>`;
+  else if(!hasP&&hasV) note=`<span class="warn">△ たんぱく質が不足</span><span>メインか一皿完結を1品足してください。</span>`;
+  const pickChips=picks.map(d=>`<span class="pick">${esc(d.n)}<button data-rm="${d.id}" aria-label="外す">×</button></span>`).join("");
+  const open=state.trayOpen;
+  return `<div class="tray-spacer"></div><div class="tray ${open?"open":""}"><div class="tray-inner">
+    <button class="tray-bar" id="trayToggle" aria-expanded="${open}">
+      <span class="tb-h">こんだて</span><span class="tb-cov">${mini("P",hasP)}${mini("V",hasV)}</span>
+      <span class="tb-count">${picks.length?picks.length+"品":"未選択"}</span>
+      <span style="flex:1"></span><span class="tb-caret">▲</span></button>
+    <div class="tray-detail"${open?"":" hidden"}>
+      ${picks.length?`<div class="picks">${pickChips}</div>`:`<div class="picks"><span style="opacity:.4;font-size:12.5px">まだ選んでいません</span></div>`}
+      <div class="tray-note">${note}</div>
+      <div class="tray-actions"><button id="autoMenu">おまかせで組む</button>${picks.length?`<button id="clearMenu">クリア</button>`:""}</div>
+    </div></div></div>`;
+}
+
+/* ---------- dish form ---------- */
+function openDishForm(id){
+  const d=id?byId(id):null; state.editId=d?d.id:null;
+  state.formIng=d?d.ing.slice():[]; state.pickerQ=""; state.newIngOpen=false;
+  const m=document.getElementById("modal"); m.innerHTML=dishFormHTML(d); m.hidden=false;
+  bindDishForm(); renderPicker();
+  const nm=document.getElementById("f-name"); if(nm)nm.focus();
+}
+function closeModal(){const m=document.getElementById("modal");m.hidden=true;m.innerHTML="";state.editId=null;}
+function dishFormHTML(d){
+  const sel=(v,cur)=>v===cur?" selected":""; const chk=(c)=>c?" checked":"";
+  const cuOpts=Object.keys(CUISINE).map(k=>`<option value="${k}"${sel(k,d?.cu)}>${CUISINE[k]}</option>`).join("");
+  const catOpts=Object.keys(CAT).map(k=>`<option value="${k}"${sel(k,d?.cat)}>${CAT[k].l}</option>`).join("");
+  const provBox=["P","V"].map(p=>`<label><input type="checkbox" class="f-prov" value="${p}"${chk(d?.prov.includes(p))}>${PROV[p]}</label>`).join("");
+  return `<div class="sheet" role="dialog" aria-modal="true">
+    <div class="sheet-h"><h2>${d?"料理を編集":"料理を追加"}</h2></div>
+    <div class="f-row"><label class="lab">料理名</label><input type="text" id="f-name" value="${d?esc(d.n):""}" placeholder="例：豚の生姜焼き"></div>
+    <div class="f-row"><label class="lab">ジャンル</label><select id="f-cu">${cuOpts}</select></div>
+    <div class="f-row"><label class="lab">献立での分類</label><select id="f-cat">${catOpts}</select>
+      <div class="f-hint">パスタ・カレー・丼など主食込みで完結するものは「一皿完結」。</div></div>
+    <div class="f-row"><label class="lab">栄養（複数可）</label><div class="opts p">${provBox}</div>
+      <div class="f-hint">献立づくりでの判定に使います。肉・魚・豆・卵は「たんぱく」。</div></div>
+    <div class="f-row"><label class="lab">状態</label><div class="opts">
+      <label><input type="radio" name="f-st" value="can"${d?chk(d.st==="can"):" checked"}>作れる</label>
+      <label><input type="radio" name="f-st" value="learn"${chk(d?.st==="learn")}>学びたい</label></div></div>
+    <div class="f-row"><label class="lab">使う食材（マスタから選ぶ／旬はここから決まります）</label>
+      <div class="picker" id="ing-picker"></div></div>
+    <div class="sheet-actions">
+      <button class="save" id="f-save">${d?"保存する":"追加する"}</button>
+      ${d?`<button class="del" id="f-del">削除</button>`:""}
+      <button class="cancel" id="f-cancel">キャンセル</button></div>
+  </div>`;
+}
+function renderPicker(){
+  const box=document.getElementById("ing-picker"); if(!box)return;
+  const q=state.pickerQ.trim(); const sel=state.formIng; const selSet=new Set(sel);
+  const catOrder=["fish","veg","meat","other"];
+  const filtered=INGS.filter(i=>!q||i.n.includes(q));
+  const groups=catOrder.map(c=>({t:ICAT[c],items:filtered.filter(i=>i.c===c)})).filter(g=>g.items.length);
+  const groupsHTML=groups.map(g=>`<div class="pgroup"><h4>${g.t}</h4><div class="pchips">${
+    g.items.map(i=>`<button type="button" class="pchip${selSet.has(i.n)?" sel":""}" data-pick="${esc(i.n)}">${esc(i.n)}<span class="ps">${SEASON[i.s]}</span></button>`).join("")
+  }</div></div>`).join("") || `<p class="f-hint">該当する食材がありません。下の「＋新しい食材」で追加できます。</p>`;
+  const seas=deriveSeasons(sel).map(s=>`<span class="dot ${s}"></span>${SEASON[s]}`).join(" ");
+  const canAdd=state.canWrite&&!state.ingSamples;
+  const newIng=canAdd?`<div class="newing">
+    ${state.newIngOpen?`<div class="newing-fields">
+        <input type="text" id="ni-name" placeholder="食材名">
+        <select id="ni-season">${SEASON_ORDER.map(k=>`<option value="${k}">${SEASON[k]}</option>`).join("")}</select>
+        <select id="ni-cat">${Object.keys(ICAT).map(k=>`<option value="${k}"${k==="veg"?" selected":""}>${ICAT[k]}</option>`).join("")}</select>
+        <button type="button" class="newing-add" id="ni-add">追加</button>
+      </div>`:`<button type="button" class="newing-toggle" id="ni-open">＋ 新しい食材を作る</button>`}
+    </div>`:"";
+  box.innerHTML=`<input type="text" class="picker-search" id="pick-search" placeholder="食材を検索" value="${esc(state.pickerQ)}">
+    <div class="picker-box">${groupsHTML}</div>
+    <div class="derived">この料理の旬：${sel.length?seas:'<span style="opacity:.6">食材を選ぶと決まります</span>'}</div>
+    ${newIng}`;
+  bindPicker();
+}
+function bindPicker(){
+  const box=document.getElementById("ing-picker"); if(!box)return;
+  const s=document.getElementById("pick-search");
+  if(s)s.oninput=()=>{state.pickerQ=s.value; renderPicker();
+    const s2=document.getElementById("pick-search"); if(s2){s2.focus();s2.setSelectionRange(s2.value.length,s2.value.length);}};
+  box.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{
+    const n=b.dataset.pick, i=state.formIng.indexOf(n);
+    if(i>=0)state.formIng.splice(i,1);else state.formIng.push(n); renderPicker();});
+  const no=document.getElementById("ni-open"); if(no)no.onclick=()=>{state.newIngOpen=true;renderPicker();
+    const nm=document.getElementById("ni-name"); if(nm)nm.focus();};
+  const na=document.getElementById("ni-add"); if(na)na.onclick=async()=>{
+    const nm=document.getElementById("ni-name").value.trim();
+    if(!nm){alert("食材名を入れてください。");return;}
+    const sea=document.getElementById("ni-season").value, c=document.getElementById("ni-cat").value;
+    if(INGMAP[nm]){ if(!state.formIng.includes(nm))state.formIng.push(nm); }
+    else{ INGS=[...INGS,{id:"tmp-"+Date.now(),n:nm,s:sea,c}]; rebuildIngMap();
+          if(!state.formIng.includes(nm))state.formIng.push(nm); await addIngredient({n:nm,s:sea,c}); }
+    state.newIngOpen=false; renderPicker();};
+}
+function bindDishForm(){
+  const m=document.getElementById("modal");
+  m.onclick=(e)=>{ if(e.target===m)closeModal(); };
+  document.getElementById("f-cancel").onclick=closeModal;
+  const del=document.getElementById("f-del");
+  if(del)del.onclick=async()=>{ if(confirm("この料理を削除しますか？")){await delDish(state.editId);closeModal();} };
+  document.getElementById("f-save").onclick=async()=>{
+    const n=document.getElementById("f-name").value.trim();
+    if(!n){alert("料理名を入れてください。");return;}
+    const prov=[...m.querySelectorAll(".f-prov:checked")].map(x=>x.value);
+    const st=(m.querySelector('input[name="f-st"]:checked')||{}).value||"can";
+    const payload={n,cu:document.getElementById("f-cu").value,cat:document.getElementById("f-cat").value,prov,st,ing:state.formIng.slice()};
+    if(state.editId)await saveDish(state.editId,payload); else await addDish(payload);
+    closeModal();
+  };
+}
+
+/* ---------- ingredient manager ---------- */
+function openIngManager(){
+  const m=document.getElementById("modal"); m.innerHTML=ingManagerHTML(); m.hidden=false;
+  m.onclick=(e)=>{ if(e.target===m)closeModal(); };
+  document.getElementById("mgr-close").onclick=closeModal;
+  document.getElementById("mgr-add").onclick=()=>openIngForm(null);
+  m.querySelectorAll("[data-ing-edit]").forEach(b=>b.onclick=()=>openIngForm(b.dataset.ingEdit));
+}
+function ingManagerHTML(){
+  const groups=SEASON_ORDER.map(s=>({s,items:INGS.filter(i=>i.s===s).sort((a,b)=>a.c<b.c?-1:1)})).filter(g=>g.items.length);
+  const body=groups.map(g=>`<div class="mgr-group">
+    <h4><span class="sd dot ${g.s}"></span>${SEASON[g.s]}</h4>
+    <div class="mgr-chips">${g.items.map(i=>`<button class="mgr-chip" data-ing-edit="${i.id}">${esc(i.n)}<span class="mc">${ICAT[i.c]||""}</span></button>`).join("")}</div>
+  </div>`).join("");
+  return `<div class="sheet" role="dialog" aria-modal="true">
+    <div class="sheet-h"><h2>食材と旬の管理</h2><span style="flex:1"></span>
+      <button class="manage-btn" id="mgr-add">＋ 食材を追加</button></div>
+    <p class="f-hint" style="margin-bottom:14px">食材をタップすると旬・分類を編集できます。ここで変えた旬は、その食材を使う料理すべてに反映されます。</p>
+    ${body||'<p class="empty">食材がありません。</p>'}
+    <div class="sheet-actions"><button class="cancel" id="mgr-close" style="margin-left:auto">閉じる</button></div>
+  </div>`;
+}
+function openIngForm(id){
+  const it=id?INGS.find(x=>x.id===id):null;
+  const m=document.getElementById("modal");
+  const sel=(v,cur)=>v===cur?" selected":"";
+  const used=it?dishesUsing(it.n):0;
+  m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">
+    <div class="sheet-h"><button class="back" id="ing-back" aria-label="戻る">‹</button><h2>${it?"食材を編集":"食材を追加"}</h2></div>
+    <div class="f-row"><label class="lab">食材名</label><input type="text" id="ing-name" value="${it?esc(it.n):""}" placeholder="例：ほうれん草"></div>
+    <div class="f-row"><label class="lab">旬</label><select id="ing-season">${SEASON_ORDER.map(k=>`<option value="${k}"${sel(k,it?.s)}>${SEASON[k]}</option>`).join("")}</select></div>
+    <div class="f-row"><label class="lab">分類</label><select id="ing-cat">${Object.keys(ICAT).map(k=>`<option value="${k}"${sel(k,it?.c)}>${ICAT[k]}</option>`).join("")}</select></div>
+    ${it&&used?`<p class="f-hint">この食材は現在 ${used}品 で使われています。</p>`:""}
+    <div class="sheet-actions">
+      <button class="save" id="ing-save">${it?"保存する":"追加する"}</button>
+      ${it?`<button class="del" id="ing-del">削除</button>`:""}
+      <button class="cancel" id="ing-cancel">キャンセル</button></div>
+  </div>`;
+  m.hidden=false; m.onclick=(e)=>{ if(e.target===m)closeModal(); };
+  document.getElementById("ing-back").onclick=openIngManager;
+  document.getElementById("ing-cancel").onclick=openIngManager;
+  const del=document.getElementById("ing-del");
+  if(del)del.onclick=async()=>{
+    const msg=used?`「${it.n}」は${used}品で使われています。削除すると、それらの料理からは食材名が残りますが旬の判定に使われなくなります。削除しますか？`:`「${it.n}」を削除しますか？`;
+    if(confirm(msg)){await delIngredient(it.id);openIngManager();}};
+  document.getElementById("ing-save").onclick=async()=>{
+    const n=document.getElementById("ing-name").value.trim();
+    if(!n){alert("食材名を入れてください。");return;}
+    const payload={n,s:document.getElementById("ing-season").value,c:document.getElementById("ing-cat").value};
+    if(it)await saveIngredient(it.id,payload); else await addIngredient(payload);
+    openIngManager();
+  };
+}
+
+/* ---------- bindings ---------- */
+function bindView(){
+  const el=document.getElementById("view");
+  el.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{state.season=b.dataset.k;state.ing=null;render();});
+  el.querySelectorAll("[data-ing]").forEach(b=>b.onclick=()=>{state.ing=state.ing===b.dataset.ing?null:b.dataset.ing;render();});
+  const ci=document.getElementById("clearIng");if(ci)ci.onclick=()=>{state.ing=null;render();};
+  const mg=document.getElementById("mgrBtn");if(mg)mg.onclick=openIngManager;
+  el.querySelectorAll("[data-cu]").forEach(b=>b.onclick=()=>{state.cuisine=b.dataset.cu;render();});
+  el.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openDishForm(b.dataset.edit));
+  el.querySelectorAll("[data-dish]").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.dish,i=state.basket.indexOf(id);
+    if(i>=0)state.basket.splice(i,1);else state.basket.push(id);render();});
+  el.querySelectorAll("[data-rm]").forEach(b=>b.onclick=(e)=>{e.stopPropagation();state.basket=state.basket.filter(x=>x!==b.dataset.rm);render();});
+  const tt=document.getElementById("trayToggle");if(tt)tt.onclick=()=>{state.trayOpen=!state.trayOpen;render();};
+  const am=document.getElementById("autoMenu");if(am)am.onclick=()=>{
+    const pool=DISHES.filter(statusOk), pPool=pool.filter(d=>d.prov.includes("P"));
+    const pick=pPool.length?pPool[Math.floor(Math.random()*pPool.length)]:null;
+    const basket=pick?[pick.id]:[];
+    if(!pick||!pick.prov.includes("V")){const vPool=pool.filter(d=>d.prov.includes("V")&&(!pick||d.id!==pick.id));
+      if(vPool.length)basket.push(vPool[Math.floor(Math.random()*vPool.length)].id);}
+    state.basket=basket;render();};
+  const cm=document.getElementById("clearMenu");if(cm)cm.onclick=()=>{state.basket=[];render();};
+  const ib=document.getElementById("importBtn");if(ib)ib.onclick=()=>importSamples(ib);
+  const ba=document.getElementById("bannerAdd");if(ba)ba.onclick=()=>openDishForm(null);
+}
+document.querySelectorAll(".status-seg button").forEach(b=>b.onclick=()=>{
+  state.status=b.dataset.s;
+  document.querySelectorAll(".status-seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  state.basket=state.basket.filter(id=>{const d=byId(id);return d&&statusOk(d);});
+  render();});
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  state.view=b.dataset.v;
+  document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  render();});
+document.getElementById("addFab").onclick=()=>openDishForm(null);
+
+rebuildDishes(); render(); initDb();
+</script>
+</body>
+</html>
